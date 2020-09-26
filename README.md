@@ -1,7 +1,7 @@
 Relief.jl
 ======
 
-Relief.jl provides implementations of various [Relief-based algorithms](TODO) in Julia. These include:
+Relief.jl provides implementations of various [Relief-based algorithms](https://en.wikipedia.org/wiki/Relief_(feature_selection)) in Julia. These include:
 
 - Relief
 - ReliefF

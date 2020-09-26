@@ -4,8 +4,8 @@
                   dist_func::Any=(e1, e2) -> sum(abs.(e1 .- e2), dims=2); 
                   f_type::String="continuous")::Array{Float64,1}
 
-Compute feature weights using SWRF* algorithm. The f_type argument specifies whether the features 
-are continuous or discrete and can either have the value of "continuous" or "discrete".
+Compute feature weights using SWRF* algorithm. The f_type argument specifies whether the features are continuous or discrete 
+and can either have the value of "continuous" or "discrete".
 
 ---
 # Reference:
