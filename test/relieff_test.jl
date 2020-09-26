@@ -1,7 +1,3 @@
-using Test
-using Relief
-using Relief
-
 
 # Test functionality with continuous features.
 @testset "ReliefF - Continuous Features" begin

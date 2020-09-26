@@ -1,6 +1,6 @@
 
 """
-    turf(data::Array{<:Real,2}, target::Array{<:Integer,1}, num_it::Integer=10; 
+    turf(data::Array{<:Real,2}, target::Array{<:Integer,1}, num_it::Integer=50; 
               rba::Any=Relief.relieff)::Array{Float64,1}
 
 Compute feature weights using TuRF algorithm. The rba argument specifies a (partially applied) wrapped 

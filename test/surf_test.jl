@@ -1,6 +1,3 @@
-using Test
-using Relief
-
 
 # Test functionality with continuous features.
 @testset "SURF - Continuous Features" begin

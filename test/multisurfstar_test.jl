@@ -1,9 +1,6 @@
-using Test
-using Relief
-
 
 # Test functionality with continuous features.
-@testset "MultiSURFStar - Continuous Features" begin
+@testset "MultiSURF* - Continuous Features" begin
     data = rand(1000, 5)
     for idx1 = 1:size(data, 2) - 1
         for idx2 = idx1+1:size(data, 2)
@@ -17,7 +14,7 @@ end
 
 
 # Test functionality with discrete features.
-@testset "MultiSURFStar - Discrete Features" begin
+@testset "MultiSURF* - Discrete Features" begin
     data = rand([0, 1, 2, 3], 1000, 5)
     for idx1 = 1:size(data, 2) - 1
         for idx2 = idx1+1:size(data, 2)
@@ -31,7 +28,7 @@ end
 
 
 # Test exceptions.
-@testset "MultiSURFStar - Exceptions" begin
+@testset "MultiSURF* - Exceptions" begin
     data = rand([0, 1, 2, 3], 1000, 5)
     target = Int64.(data[:, 1] .> data[:, 2])
     @test_throws DomainError Relief.multisurfstar(data, target, f_type="something_else")

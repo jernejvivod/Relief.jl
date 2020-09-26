@@ -32,7 +32,7 @@ function vlsrelief(data::Array{<:Real,2}, target::Array{<:Integer,1}, num_partit
     @inbounds for i = 1:num_subsets
 
         # Randomly select k partitions and combine them to form a subset of features of examples.
-        ind_sel = [collect(el:el+partition_size-1) for el in sample(feat_ind_start_pos, num_partitions_to_select, replace=false)]
+        ind_sel = [collect(el:el+partition_size-1) for el in StatsBase.sample(feat_ind_start_pos, num_partitions_to_select, replace=false)]
 
         # Flatten list of indices' lists.
         ind_sel_unl = Array{Int64}(undef, num_partitions_to_select*partition_size)

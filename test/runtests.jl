@@ -1,3 +1,5 @@
+using Relief, Test
+
 # Run tests
 include("./relief_test.jl")
 include("./relieff_test.jl")
@@ -13,4 +15,4 @@ include("./turf_test.jl")
 include("./vlsrelief_test.jl")
 include("./iterative_relief_test.jl")
 include("./irelief_test.jl")
-include("./ecrelief_test.jl ")
+include("./ecrelieff_test.jl")

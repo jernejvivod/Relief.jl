@@ -1,6 +1,3 @@
-using Test
-using Relief
-
 
 # Test functionality with continuous features.
 @testset "MultiSURF - Continuous Features" begin
