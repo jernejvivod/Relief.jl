@@ -1,7 +1,7 @@
 
 # Test functionality with continuous features.
 @testset "VLSRelief - Continuous Features" begin
-    data = rand(500, 10)
+    data = rand(800, 10)
     for idx1 = 1:size(data, 2) - 1
         for idx2 = idx1+1:size(data, 2)
             target = Int64.(data[:, idx1] .> data[:, idx2])
@@ -15,7 +15,7 @@ end
 
 # Test functionality with discrete features.
 @testset "VLSRelief - Discrete Features" begin
-    data = rand([0, 1, 2, 3], 500, 10)
+    data = rand([0, 1, 2, 3], 800, 10)
     for idx1 = 1:size(data, 2) - 1
         for idx2 = idx1+1:size(data, 2)
             target = Int64.(data[:, idx1] .> data[:, idx2])
@@ -29,7 +29,7 @@ end
 
 # Test functionality with default RBA (ReliefF).
 @testset "VLSRelief - Default RBA" begin
-    data = rand([0, 1, 2, 3], 500, 10)
+    data = rand([0, 1, 2, 3], 800, 10)
     idx1, idx2 = 1, 2
     target = Int64.(data[:, idx1] .> data[:, idx2])
     weights = Relief.vlsrelief(data, target, 3, 10, 3)
