@@ -16,6 +16,8 @@ matrix:
   fast_finish: true
 notifications:
   email: false
+env:
+  - PYTHON=""
 after_success:
   - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
 
