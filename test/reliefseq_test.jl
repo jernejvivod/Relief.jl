@@ -2,7 +2,7 @@ using Relief, Test
 
 # Test functionality with continuous features.
 @testset "ReliefSeq - Continuous Features" begin
-    data = rand(800, 10)
+    data = rand(1000, 10)
     for idx1 = 1:size(data, 2) - 1
         for idx2 = idx1+1:size(data, 2)
             target = Int64.(data[:, idx1] .> data[:, idx2])
@@ -16,7 +16,7 @@ end
 
 # Test functionality with discrete features.
 @testset "ReliefSeq - Discrete Features" begin
-    data = rand([0, 1, 2, 3], 800, 10)
+    data = rand([0, 1, 2, 3], 1000, 10)
     for idx1 = 1:size(data, 2) - 1
         for idx2 = idx1+1:size(data, 2)
             target = Int64.(data[:, idx1] .> data[:, idx2])
