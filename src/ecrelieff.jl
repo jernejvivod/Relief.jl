@@ -1,6 +1,13 @@
-using ScikitLearn.CrossValidation: cross_val_score
+# using ScikitLearn.CrossValidation: cross_val_score
 using ScikitLearn
-@sk_import naive_bayes: GaussianNB
+using PyCall
+
+const naive_bayes = PyNULL()
+const model_selection = PyNULL()
+function __init__()
+    copy!(naive_bayes, pyimport("sklearn.naive_bayes"))
+    copy!(model_selection, pyimport("sklearn.model_selection"))
+end
 
 """
     ec_ranking(data::Array{<:Real,2}, target::Array{<:Integer,1}, 
@@ -62,12 +69,8 @@ function ec_ranking(data::Array{<:Real,2}, target::Array{<:Integer,1},
 			# Perform 5-fold cross validation.
 			data_filt = data[:, msk_rm]
 
-            println("HERE")
-
 			# Compare to current maximal CV value.
-			cv_val_nxt = Statistics.mean(cross_val_score(GaussianNB(), data_filt, target; cv=5))
-
-            println("THERE")
+			cv_val_nxt = Statistics.mean(model_selection.cross_val_score(naive_bayes.GaussianNB(), data_filt, target; cv=5))
 
 			# If CV value greater than current maximal, save current
 			# CV score, tinfo and feature weights.

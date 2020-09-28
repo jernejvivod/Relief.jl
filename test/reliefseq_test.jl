@@ -1,4 +1,3 @@
-using Relief, Test
 
 # Test functionality with continuous features.
 @testset "ReliefSeq - Continuous Features" begin

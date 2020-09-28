@@ -1,5 +1,3 @@
-using Relief
-using Test
 
 # Test functionality with continuous features.
 @testset "Evaporative Cooling ReliefF - Continuous Features" begin
@@ -7,9 +5,8 @@ using Test
     for idx1 = 1:size(data, 2) - 1
         for idx2 = idx1+1:size(data, 2)
             target = Int64.(data[:, idx1] .> data[:, idx2])
-            weights = Relief.ecrelieff(data, target, f_type="continuous")
-            @test all(weights[idx1] .>= weights[(1:end .!= idx1) .& (1:end .!= idx2)])
-            @test all(weights[idx2] .>= weights[(1:end .!= idx1) .& (1:end .!= idx2)])
+            rank = Relief.ecrelieff(data, target, f_type="continuous")
+            @test Set([rank[idx1], rank[idx2]]) == Set([1, 2])
         end
     end
 end
@@ -21,9 +18,8 @@ end
     for idx1 = 1:size(data, 2) - 1
         for idx2 = idx1+1:size(data, 2)
             target = Int64.(data[:, idx1] .> data[:, idx2])
-            weights = Relief.ecrelieff(data, target, f_type="discrete")
-            @test all(weights[idx1] .>= weights[(1:end .!= idx1) .& (1:end .!= idx2)])
-            @test all(weights[idx2] .>= weights[(1:end .!= idx1) .& (1:end .!= idx2)])
+            rank = Relief.ecrelieff(data, target, f_type="discrete")
+            @test Set([rank[idx1], rank[idx2]]) == Set([1, 2])
         end
     end
 end
