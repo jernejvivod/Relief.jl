@@ -1,3 +1,4 @@
+using Test, Relief
 
 # Test functionality with continuous features.
 @testset "Evaporative Cooling ReliefF - Continuous Features" begin

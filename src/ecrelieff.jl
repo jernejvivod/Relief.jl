@@ -133,8 +133,14 @@ end
 Compute joint entropy of two distributions (auxiliary function).
 """
 function joint_entropy_pair(distribution1::Array{<:Real,1}, distribution2::Array{<:Real,1})::Float64
+    
     stacked = hcat(distribution1, distribution2)
-    counts_pairs = [sum(all(stacked' .== reshape(el, length(el), 1), dims=1)) for el in eachrow(unique(stacked, dims=1))]
+    unique_stacked = unique(stacked, dims=1)
+    counts_pairs = Array{Int64}(undef, size(unique_stacked, 1))
+    @inbounds for idx = 1:size(unique_stacked, 1)
+        counts_pairs[idx] = sum(all(stacked' .== reshape(unique_stacked[idx, :], length(unique_stacked[idx, :]), 1), dims=1))
+    end
+
     p_pairs = counts_pairs/length(distribution1)
     return sum(p_pairs.*log.(p_pairs))
 end
