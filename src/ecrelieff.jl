@@ -62,8 +62,12 @@ function ec_ranking(data::Array{<:Real,2}, target::Array{<:Integer,1},
 			# Perform 5-fold cross validation.
 			data_filt = data[:, msk_rm]
 
+            println("HERE")
+
 			# Compare to current maximal CV value.
 			cv_val_nxt = Statistics.mean(cross_val_score(GaussianNB(), data_filt, target; cv=5))
+
+            println("THERE")
 
 			# If CV value greater than current maximal, save current
 			# CV score, tinfo and feature weights.
@@ -156,7 +160,7 @@ end
 
 
 """
-function ec_relieff(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-1, 
+function ecrelieff(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-1, 
                     k::Integer=5, dist_func::Any=(e1, e2) -> sum(abs.(e1 .- e2), dims=2))::Array{Int64,1}
 
 Compute feature rankings using Evaporative Cooling ReliefF algorithm.
@@ -166,12 +170,12 @@ Compute feature rankings using Evaporative Cooling ReliefF algorithm.
 - B.A. McKinney, D.M. Reif, B.C. White, J.E. Crowe, Jr., J.H. Moore.
 Evaporative cooling feature selection for genotypic data involving interactions.
 """
-function ec_relieff(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-1, 
+function ecrelieff(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-1, 
                     k::Integer=5, dist_func::Any=(e1, e2) -> sum(abs.(e1 .- e2), dims=2); 
                     mode::String="k_nearest", sig::Real=1.0, f_type::String="continuous")::Array{Int64,1}
     
     # Compute ReliefF weights.
-    relieff_weights = Relief.relieff(data, target, m, k, dist_func, mode=mode, sig=sig, f_type=f_type)
+    relieff_weights = relieff(data, target, m, k, dist_func, mode=mode, sig=sig, f_type=f_type)
 
     # Perform evaporative cooling feature selection to get feature ranks.
     return ec_ranking(data, target, relieff_weights, mu_vals(data, target))

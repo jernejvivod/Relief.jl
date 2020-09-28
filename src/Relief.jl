@@ -18,7 +18,7 @@ export
     boostedsurf,
     iterative_relief,
     irelief,
-    ecrelief,
+    ecrelieff,
     vlsrelief,
     turf
 

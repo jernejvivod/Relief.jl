@@ -16,8 +16,18 @@ wide association analysis. In 2008 IEEE Symposium on Computational
 Intelligence in Bioinformatics and Computational Biology, CIBCB ’08,
 2008.
 """
-function vlsrelief(data::Array{<:Real,2}, target::Array{<:Integer,1}, num_partitions_to_select::Integer, 
-                   num_subsets::Integer, partition_size::Integer; rba::Any=Relief.relieff)::Array{Float64,1}
+function vlsrelief(data::Array{<:Real,2}, target::Array{<:Integer,1}, partition_size::Integer=-1,
+                    num_partitions_to_select::Integer=-1, num_subsets::Integer=100; rba::Any=Relief.relieff)::Array{Float64,1}
+    
+    # If partition_size argument has signal value of -1, compute default value from data size.
+    if partition_size == -1
+        partition_size = Int64(size(data, 2)/10)
+    end
+
+    # If num_partitions_to_select argument has signal value of -1, compute default value from data size.
+    if num_partitions_to_select == -1
+        num_partitions_to_select = partition_size*5
+    end
 
     # Initialize feature weights vector.
     weights = zeros(Float64, size(data, 2))
