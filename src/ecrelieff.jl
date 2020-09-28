@@ -5,8 +5,10 @@ using PyCall
 const naive_bayes = PyNULL()
 const model_selection = PyNULL()
 function __init__()
-    copy!(naive_bayes, pyimport("sklearn.naive_bayes"))
-    copy!(model_selection, pyimport("sklearn.model_selection"))
+    # copy!(naive_bayes, pyimport("sklearn.naive_bayes"))
+    # copy!(model_selection, pyimport("sklearn.model_selection"))
+    copy!(naive_bayes, PyCall.pyimport_conda("sklearn.naive_bayes", "scikit-learn"))
+    copy!(model_selection, PyCall.pyimport_conda("sklearn.model_selection", "scikit-learn"))
 end
 
 """
