@@ -157,9 +157,10 @@ Compute mu values from data and target (auxiliary function).
 """
 function mu_vals(data::Array{<:Real,2}, target::Array{<:Integer,1})
     mu_vals = Array{Float64}(undef, size(data, 2))
-    @inbounds for (idx, col) in enumerate(eachcol(data))
-        mu_vals[idx] = scaled_mutual_information(Array{Real,1}(col), target)
-    end 
+    @inbounds for idx = 1:size(data, 2)
+        mu_vals[idx] = scaled_mutual_information(Array{Real,1}(data[:, idx]), target)
+    end
+
     return mu_vals
 end
 
