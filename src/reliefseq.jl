@@ -24,7 +24,7 @@ function reliefseq(data::Array{<:Real, 2}, target::Array{<:Integer, 1}, m::Signe
     # Check if k nearest misses and hits can be found for each class.
     upper_k_lim = minimum(counts(Int64.(target))) - 1
     if k_min > upper_k_lim
-        throw(ArgumentError(k_min, "Insufficient number of instances to respect lower bound k_min.")) 
+        throw(DomainError(k_min, "Insufficient number of instances to respect lower bound k_min.")) 
     end
 
     if k_max > upper_k_lim
