@@ -21,12 +21,12 @@ function vlsrelief(data::Array{<:Real,2}, target::Array{<:Integer,1}, partition_
     
     # If partition_size argument has signal value of -1, compute default value from data size.
     if partition_size == -1
-        partition_size = Int64(size(data, 2)/10)
+        partition_size = Int64(ceil(size(data, 2) / 20))
     end
 
     # If num_partitions_to_select argument has signal value of -1, compute default value from data size.
     if num_partitions_to_select == -1
-        num_partitions_to_select = partition_size*5
+        num_partitions_to_select = 5
     end
 
     # Initialize feature weights vector.
