@@ -21,7 +21,7 @@ function relieff(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-1
     
     # Check if k nearest misses and hits can be found for each class.
     # If not, reduce k.
-    upper_k_lim = minimum(counts(Int64.(target))) - 1
+    upper_k_lim = minimum(values(countmap(Int64.(target)))) - 1
     if k > upper_k_lim
         k = upper_k_lim
         @warn @sprintf "k reduced to %d because of insufficient number of instances." upper_k_lim
