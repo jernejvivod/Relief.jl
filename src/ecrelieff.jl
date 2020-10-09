@@ -1,4 +1,3 @@
-# using ScikitLearn.CrossValidation: cross_val_score
 using ScikitLearn
 using PyCall
 
