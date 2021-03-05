@@ -54,7 +54,7 @@ function surf(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-1,
         # Get indices in distance vector (from square form indices).
         neigh_idx = square_to_vec(row_idxs, col_idxs, size(data, 1)) .+ 2
         
-        # Query distances to neighbours and get mask for neighbours that fall within
+        # Query distances to neighbors and get mask for neighbors that fall within
         # hypersphere with radius mean_dist.
         neigh_mask = dists[neigh_idx[neigh_idx .!= 1]] .<= mean_dist
         insert!(neigh_mask, idx, 0)
@@ -76,8 +76,8 @@ function surf(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-1,
         cm = countmap(miss_classes)                                 # Count unique values.
         u = collect(keys(cm))
         c = collect(values(cm)) 
-        neighbour_weights = c ./ length(miss_classes)       # Compute misses' weights.
-        @inbounds for (w, val) = zip(neighbour_weights, u)  # Build multiplier vector.
+        neighbor_weights = c ./ length(miss_classes)       # Compute misses' weights.
+        @inbounds for (w, val) = zip(neighbor_weights, u)  # Build multiplier vector.
             find_res = findall(miss_classes .== val)
             weights_mult[find_res] .= w
         end

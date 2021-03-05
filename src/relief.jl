@@ -47,14 +47,14 @@ function relief(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-1,
         row_idxs = repeat([idx - 1], size(data, 1))
         col_idxs = collect(0:size(data, 1)-1)
 
-        # Get indices of neighbours with same class in distances vector and find nearest hit.
+        # Get indices of neighbors with same class in distances vector and find nearest hit.
         sel_neigh_same = (target .== target[idx]) .& (1:length(target) .!= idx)
         neigh_idx_hit = square_to_vec(row_idxs[sel_neigh_same], 
                                         col_idxs[sel_neigh_same], size(data, 1)) .+ 1
         idx_nearest_hit = argmin(dists[neigh_idx_hit])
         nearest_hit = vec(data[sel_neigh_same, :][idx_nearest_hit, :])
 
-        # Get indices of neighbours with different class in distances vector and find nearest miss.
+        # Get indices of neighbors with different class in distances vector and find nearest miss.
         sel_neigh_miss = target .!= target[idx]
         neigh_idx_miss = square_to_vec(row_idxs[sel_neigh_miss], col_idxs[sel_neigh_miss], size(data, 1)) .+ 1
         idx_nearest_miss = argmin(dists[neigh_idx_miss])

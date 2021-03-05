@@ -51,15 +51,15 @@ function multisurf(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=
         # Get indices in distance vector (from square form indices).
         neigh_idx = square_to_vec(row_idxs, col_idxs, size(data, 1)) .+ 2
 
-        # Query distances to neighbours to get masks for both zones.
-        dists_neighbours = dists[neigh_idx[neigh_idx .!= 1]]
-        mu = Statistics.mean(dists_neighbours)
-        sig = Statistics.std(dists_neighbours)
+        # Query distances to neighbors to get masks for both zones.
+        dists_neighbors = dists[neigh_idx[neigh_idx .!= 1]]
+        mu = Statistics.mean(dists_neighbors)
+        sig = Statistics.std(dists_neighbors)
         thresh_near = mu - sig/2.0
-        neigh_mask_near = dists_neighbours .< thresh_near  
+        neigh_mask_near = dists_neighbors .< thresh_near  
         insert!(neigh_mask_near, idx, 0)
         
-        # Get class values of miss neighbours.
+        # Get class values of miss neighbors.
         miss_classes_near = target[neigh_mask_near .& (target .!= target[idx])]
         
         # Get masks for considered regions.
@@ -76,9 +76,9 @@ function multisurf(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=
         cm = countmap(miss_classes_near)                                 # Count unique values.
         u = collect(keys(cm))
         c = collect(values(cm)) 
-        neighbour_weights = c ./ length(miss_classes_near)  # Compute misses' weights.
+        neighbor_weights = c ./ length(miss_classes_near)  # Compute misses' weights.
 
-        @inbounds for (w, val) = zip(neighbour_weights, u)  # Build multiplier vector.
+        @inbounds for (w, val) = zip(neighbor_weights, u)  # Build multiplier vector.
             find_res = findall(miss_classes_near .== val)
             weights_mult[find_res] .= w
         end

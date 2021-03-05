@@ -58,18 +58,18 @@ function boostedsurf(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signe
         # Get indices in distance vector (from square form indices).
         neigh_idx = square_to_vec(row_idxs, col_idxs, size(data, 1)) .+ 2
 
-        # Query distances to neighbours to get masks for both zones.
-        dists_neighbours = dists[neigh_idx[neigh_idx .!= 1]]
-        mu = Statistics.mean(dists_neighbours)
-        sig = Statistics.std(dists_neighbours)
+        # Query distances to neighbors to get masks for both zones.
+        dists_neighbors = dists[neigh_idx[neigh_idx .!= 1]]
+        mu = Statistics.mean(dists_neighbors)
+        sig = Statistics.std(dists_neighbors)
         thresh_near = mu - sig/2.0
         thresh_far = mu + sig/2.0
-        neigh_mask_near = dists_neighbours .< thresh_near  
-        neigh_mask_far = dists_neighbours .> thresh_far   
+        neigh_mask_near = dists_neighbors .< thresh_near  
+        neigh_mask_far = dists_neighbors .> thresh_far   
         insert!(neigh_mask_near, idx, 0)
         insert!(neigh_mask_far, idx, 0)
         
-        # Get class values of miss neighbours.
+        # Get class values of miss neighbors.
         miss_classes_near = target[neigh_mask_near .& (target .!= target[idx])]
         miss_classes_far = target[neigh_mask_far .& (target .!= target[idx])]
         
@@ -91,9 +91,9 @@ function boostedsurf(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signe
         cm = countmap(miss_classes_near)  # Count unique values.
         u = collect(keys(cm))
         c = collect(values(cm)) 
-        neighbour_weights = c ./ length(miss_classes_near)  # Compute misses' weights.
+        neighbor_weights = c ./ length(miss_classes_near)  # Compute misses' weights.
 
-        @inbounds for (w, val) = zip(neighbour_weights, u)  # Build multiplier vector.
+        @inbounds for (w, val) = zip(neighbor_weights, u)  # Build multiplier vector.
             find_res = findall(miss_classes_near .== val)
             weights_mult1[find_res] .= w
         end
@@ -103,9 +103,9 @@ function boostedsurf(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signe
         cm = countmap(miss_classes_far)  # Count unique values.
         u = collect(keys(cm))
         c = collect(values(cm)) 
-        neighbour_weights = c ./ length(miss_classes_far)   # Compute misses' weights.
+        neighbor_weights = c ./ length(miss_classes_far)   # Compute misses' weights.
 
-        @inbounds for (w, val) = zip(neighbour_weights, u)  # Build multiplier vector.
+        @inbounds for (w, val) = zip(neighbor_weights, u)  # Build multiplier vector.
             find_res = findall(miss_classes_far .== val)
             weights_mult2[find_res] .= w
         end
@@ -116,24 +116,24 @@ function boostedsurf(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signe
         if f_type == "continuous"
             # If features continuous.
         
-            # Penalty term for near neighbours.
+            # Penalty term for near neighbors.
             penalty_near = sum(abs.(data[idx:idx, :] .- data[hit_neigh_mask_near, :]) ./ (max_f_vals .- min_f_vals .+ eps(Float64)), dims=1)
 
-            # Reward term for near neighbours.
+            # Reward term for near neighbors.
             reward_near = sum(weights_mult1 .* abs.(data[idx:idx, :] .- data[miss_neigh_mask_near, :]) ./ (max_f_vals .- min_f_vals .+ eps(Float64)), dims=1)
 
-            # Weights values for near neighbours.
+            # Weights values for near neighbors.
             weights_near = weights .- penalty_near ./ (size(data, 1)*sum(hit_neigh_mask_near) + eps(Float64)) .+ 
                 reward_near ./ (size(data, 1)*sum(miss_neigh_mask_near) + eps(Float64))
 
 
-            # Penalty term for far neighbours.
+            # Penalty term for far neighbors.
             penalty_far = sum(abs.(data[idx:idx, :] .- data[hit_neigh_mask_far, :]) ./ (max_f_vals .- min_f_vals .+ eps(Float64)), dims=1)
 
-            # Reward term for far neighbours.
+            # Reward term for far neighbors.
             reward_far = sum(weights_mult2 .* abs.(data[idx:idx, :] .- data[miss_neigh_mask_far, :]) ./ (max_f_vals .- min_f_vals .+ eps(Float64)), dims=1)
 
-            # Weights values for far neighbours.
+            # Weights values for far neighbors.
             weights_far = weights .- penalty_far ./ (size(data, 1)*sum(hit_neigh_mask_far) + eps(Float64)) .+ 
                 reward_far ./ (size(data, 1)*sum(miss_neigh_mask_far) + eps(Float64))
 
@@ -143,24 +143,24 @@ function boostedsurf(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signe
         elseif f_type == "discrete"
             # If features discrete.
 
-            # Penalty term for near neighbours.
+            # Penalty term for near neighbors.
             penalty_near = sum(Int64.(data[idx:idx, :] .!= data[hit_neigh_mask_near, :]), dims=1)
 
-            # Reward term for near neighbours.
+            # Reward term for near neighbors.
             reward_near = sum(weights_mult1 .* Int64.(data[idx:idx, :] .!= data[miss_neigh_mask_near, :]), dims=1)
 
-            # Weights values for near neighbours.
+            # Weights values for near neighbors.
             weights_near = weights .- penalty_near ./ (size(data, 1)*sum(hit_neigh_mask_near) + eps(Float64)) .+ 
                 reward_near ./ (size(data, 1)*sum(miss_neigh_mask_near) + eps(Float64))
 
 
-            # Penalty term for far neighbours.
+            # Penalty term for far neighbors.
             penalty_far = sum(Int64.(data[idx:idx, :] .!= data[hit_neigh_mask_far, :]), dims=1)
 
-            # Reward term for far neighbours.
+            # Reward term for far neighbors.
             reward_far = sum(weights_mult2 .* Int64.(data[idx:idx, :] .!= data[miss_neigh_mask_far, :]), dims=1)
 
-            # Weights values for far neighbours.
+            # Weights values for far neighbors.
             weights_far = weights .- penalty_far ./ (size(data, 1)*sum(hit_neigh_mask_far) + eps(Float64)) .+ 
                 reward_far ./ (size(data, 1)*sum(miss_neigh_mask_far) + eps(Float64))
 

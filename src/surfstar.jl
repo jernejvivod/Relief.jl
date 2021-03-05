@@ -56,7 +56,7 @@ function surfstar(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-
         # Get indices in distance vector (from square form indices).
         neigh_idx = square_to_vec(row_idxs, col_idxs, size(data, 1)) .+ 2
 
-        # Query distances to neighbours and get masks for neighbours that fall within
+        # Query distances to neighbors and get masks for neighbors that fall within
         # hypersphere with radius mean_dist and those that fall outside hypersphere.
         neigh_mask_near = dists[neigh_idx[neigh_idx .!= 1]] .< mean_dist
         neigh_mask_far = .!neigh_mask_near
@@ -84,9 +84,9 @@ function surfstar(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-
         cm = countmap(miss_classes_near)                                  # Count unique values.
         u = collect(keys(cm))
         c = collect(values(cm)) 
-        neighbour_weights = c ./ length(miss_classes_near)  # Compute misses' weights.
+        neighbor_weights = c ./ length(miss_classes_near)  # Compute misses' weights.
 
-        @inbounds for (w, val) = zip(neighbour_weights, u)  # Build multiplier vector.
+        @inbounds for (w, val) = zip(neighbor_weights, u)  # Build multiplier vector.
             find_res = findall(miss_classes_near .== val)
             weights_mult1[find_res] .= w
         end
@@ -96,9 +96,9 @@ function surfstar(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-
         cm = countmap(miss_classes_far)                                  # Count unique values.
         u = collect(keys(cm))
         c = collect(values(cm)) 
-        neighbour_weights = c ./ length(miss_classes_far)   # Compute misses' weights.
+        neighbor_weights = c ./ length(miss_classes_far)   # Compute misses' weights.
 
-        @inbounds for (w, val) = zip(neighbour_weights, u)  # Build multiplier vector.
+        @inbounds for (w, val) = zip(neighbor_weights, u)  # Build multiplier vector.
             find_res = findall(miss_classes_far .== val)
             weights_mult2[find_res] .= w
         end
@@ -109,24 +109,24 @@ function surfstar(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-
         if f_type == "continuous"
             # If features continuous.
 
-            # Penalty term for near neighbours.
+            # Penalty term for near neighbors.
             penalty_near = sum(abs.(data[idx:idx, :] .- data[hit_neigh_mask_near, :]) ./ (max_f_vals .- min_f_vals .+ eps(Float64)), dims=1)
 
-            # Reward term for near neighbours.
+            # Reward term for near neighbors.
             reward_near = sum(weights_mult1 .* abs.(data[idx:idx, :] .- data[miss_neigh_mask_near, :]) ./ (max_f_vals .- min_f_vals .+ eps(Float64)), dims=1)
 
-            # Weights values for near neighbours.
+            # Weights values for near neighbors.
             weights_near = weights .- penalty_near ./ (size(data, 1)*sum(hit_neigh_mask_near) + eps(Float64)) .+ 
                 reward_near ./ (size(data, 1)*sum(miss_neigh_mask_near) + eps(Float64))
 
 
-            # Penalty term for far neighbours.
+            # Penalty term for far neighbors.
             penalty_far = sum(abs.(data[idx:idx, :] .- data[hit_neigh_mask_far, :]) ./ (max_f_vals .- min_f_vals .+ eps(Float64)), dims=1)
 
-            # Reward term for far neighbours.
+            # Reward term for far neighbors.
             reward_far = sum(weights_mult2 .* abs.(data[idx:idx, :] .- data[miss_neigh_mask_far, :]) ./ (max_f_vals .- min_f_vals .+ eps(Float64)), dims=1)
 
-            # Weights values for far neighbours.
+            # Weights values for far neighbors.
             weights_far = weights .- penalty_far ./ (size(data, 1)*sum(hit_neigh_mask_far) + eps(Float64)) .+ 
                 reward_far ./ (size(data, 1)*sum(miss_neigh_mask_far) + eps(Float64))
 
@@ -136,24 +136,24 @@ function surfstar(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-
         elseif f_type == "discrete"
             # If features discrete.
             
-            # Penalty term for near neighbours.
+            # Penalty term for near neighbors.
             penalty_near = sum(Int64.(data[idx:idx, :] .!= data[hit_neigh_mask_near, :]), dims=1)
 
-            # Reward term for near neighbours.
+            # Reward term for near neighbors.
             reward_near = sum(weights_mult1 .* Int64.(data[idx:idx, :] .!= data[miss_neigh_mask_near, :]), dims=1)
 
-            # Weights values for near neighbours.
+            # Weights values for near neighbors.
             weights_near = weights .- penalty_near ./ (size(data, 1)*sum(hit_neigh_mask_near) + eps(Float64)) .+ 
                 reward_near ./ (size(data, 1)*sum(miss_neigh_mask_near) + eps(Float64))
 
 
-            # Penalty term for far neighbours.
+            # Penalty term for far neighbors.
             penalty_far = sum(Int64.(data[idx:idx, :] .!= data[hit_neigh_mask_far, :]), dims=1)
 
-            # Reward term for far neighbours.
+            # Reward term for far neighbors.
             reward_far = sum(weights_mult2 .* Int64.(data[idx:idx, :] .!= data[miss_neigh_mask_far, :]), dims=1)
 
-            # Weights values for far neighbours.
+            # Weights values for far neighbors.
             weights_far = weights .- penalty_far ./ (size(data, 1)*sum(hit_neigh_mask_far) + eps(Float64)) .+ 
                 reward_far ./ (size(data, 1)*sum(miss_neigh_mask_far) + eps(Float64))
 
