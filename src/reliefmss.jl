@@ -16,7 +16,7 @@ function dm_vals(e::Array{<:Real,2}, closest::Array{<:Real,2}, max_f_vals::Array
 	end
 
     # Return dm value for each feature.
-	return results
+	return results, diff_vals
 end
 
 
@@ -36,7 +36,7 @@ feature ranking ReliefF algorithm. IJBIDM, 4:375–390, 2009.
 function reliefmss(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-1, 
                    k::Integer=10, dist_func::Any=(e1, e2) -> sum(abs.(e1 .- e2), dims=2); 
                    f_type::String="continuous")
-
+    
     # Initialize feature weights vector.
     weights = zeros(Float64, 1, size(data, 2))
 
@@ -57,11 +57,10 @@ function reliefmss(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=
     end
 
     # Compute pairwise distances between samples (vector form).
-    dists = Array{Float64}(undef, Int64((size(data, 1)^2 - size(data, 1))/2 + 1))
-    dists[1] = 0  # Set first value of distances vector to 0 - accessed when i == j in square form indices.
+    dists = Array{Float64}(undef, Int64((size(data, 1)^2 - size(data, 1))/2))
 
     # Construct pairwise distances vector using vectorized distance function.
-    top_ptr = 2
+    top_ptr = 1
     @inbounds for idx = 1:size(data,1)-1
         upper_lim = top_ptr + size(data, 1) - idx - 1
         dists[top_ptr:upper_lim] = dist_func(data[idx:idx, :], data[idx+1:end, :])
@@ -76,11 +75,12 @@ function reliefmss(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=
         col_idxs = collect(0:size(data, 1)-1)
 
         # Get indices in distance vector (from square form indices).
-        neigh_idx = Int64.(square_to_vec(row_idxs[target .== target[idx]], col_idxs[target .== target[idx]], size(data, 1))) .+ 2
-        idx_k_nearest_same = partialsortperm(dists[neigh_idx], 1:k+1)[2:end]
+        neigh_idx = square_to_vec(row_idxs[(target .== target[idx]) .& (1:length(target) .!= idx)], 
+                                  col_idxs[(target .== target[idx]) .& (1:length(target) .!= idx)], size(data, 1)) .+ 1
+        idx_k_nearest_same = partialsortperm(dists[neigh_idx], 1:k)
         
         # Get k nearest hits.
-        k_nearest_same = data[target .== target[idx], :][idx_k_nearest_same, :]
+        k_nearest_same = data[(target .== target[idx]) .& (1:length(target) .!= idx), :][idx_k_nearest_same, :]
        
         # Allocate matrix for storing the k nearest misses.
         k_nearest_other = Array{Float64}(undef, k * (length(keys(classes_map)) - 1), size(data, 2))
@@ -89,23 +89,23 @@ function reliefmss(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=
         top_ptr = 1
         @inbounds for cl = keys(classes_map)
             if cl != target[idx]
-                neigh_idx_nxt = Int64.(square_to_vec(row_idxs[target .== cl], col_idxs[target .== cl], size(data, 1))) .+ 2
+                # If class not equal to sampled example, find indices in distance vector of examples with this class.
+                neigh_idx_nxt = Int64.(square_to_vec(row_idxs[target .== cl], col_idxs[target .== cl], size(data, 1))) .+ 1
                 idx_k_nearest_other_nxt = partialsortperm(dists[neigh_idx_nxt], 1:k)
+                
+                # Get k closest examples from this class and store in matrix.
                 k_nearest_other_nxt = data[target .== cl, :][idx_k_nearest_other_nxt, :]
-
-                # Find k closest samples from same class.
                 k_nearest_other[top_ptr:top_ptr+k-1, :] = k_nearest_other_nxt
                 top_ptr += k
             end
         end
 
-        ### MARKING CONSIDERED FEATURES ###
 
+        ### MARKING CONSIDERED FEATURES ###
+        
         # Compute DM values and DIFF values for each feature of each nearest hit and nearest miss.
-        dm_vals_same = dm_vals(data[idx:idx, :], k_nearest_same, max_f_vals, min_f_vals)
-        diff_vals_same = abs.(data[idx:idx, :] .- k_nearest_same) ./ (max_f_vals .- min_f_vals .+ eps(Float64)) 
-        dm_vals_other = dm_vals(data[idx:idx, :], k_nearest_other, max_f_vals, min_f_vals)
-        diff_vals_other = abs.(data[idx:idx, :] .- k_nearest_other) ./ (max_f_vals .- min_f_vals .+ eps(Float64))
+        dm_vals_same, diff_vals_same = dm_vals(data[idx:idx, :], k_nearest_same, max_f_vals, min_f_vals)
+        dm_vals_other, diff_vals_other = dm_vals(data[idx:idx, :], k_nearest_other, max_f_vals, min_f_vals)
 
         # Compute masks for considered features of nearest hits and nearest misses.
         features_msk_same = diff_vals_same .> dm_vals_same
@@ -119,13 +119,11 @@ function reliefmss(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=
         
         # Compute diff sum weights for closest examples from different classes.
         p_weights = p_classes_other./(1 .- p_classes[p_classes[:, 1] .== target[idx], 2])
-
-        # Compute diff sum weights for closest examples from different class.
         weights_mult = reshape(repeat(p_weights, inner=k), :, 1)
 
 
         ### Weights Update ###
-
+        #
         if f_type == "continuous"
             # If features continuous.
 

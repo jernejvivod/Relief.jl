@@ -36,7 +36,7 @@ function swrfstar(data::Array{<:Real,2}, target::Array{<:Integer, 1}, m::Signed=
         p_classes[idx, :] = [p[1], p[2]/num_samples]
     end
 
-    # Go over sampled examples' indices.
+    # Go over sampled indices.
     @inbounds for idx = sample_idxs
         
         # Get samples from same class and different classes.
@@ -89,7 +89,7 @@ function swrfstar(data::Array{<:Real,2}, target::Array{<:Integer, 1}, m::Signed=
             penalty = sum(neigh_weights_same.*(abs.(data[idx:idx, :] .- samples_same_class)./(max_f_vals .- min_f_vals .+ eps(Float64))), dims=1)
 
             # Reward term
-            reward = sum(neigh_weights_other.*(weights_mult .* (abs.(data[idx:idx, :] .- samples_other_class)./(max_f_vals .- min_f_vals .+ eps(Float64)))), dims=1)
+            reward = sum(weights_mult.*(neigh_weights_other.*(abs.(data[idx:idx, :] .- samples_other_class)./(max_f_vals .- min_f_vals .+ eps(Float64)))), dims=1)
 
             # Weights update
             weights = weights .- penalty./(m*size(samples_same_class, 1) + eps(Float64)) .+ reward./(m*size(samples_other_class, 1) + eps(Float64))

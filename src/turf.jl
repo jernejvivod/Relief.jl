@@ -1,7 +1,7 @@
 
 """
     turf(data::Array{<:Real,2}, target::Array{<:Integer,1}, num_it::Integer=50; 
-              rba::Any=Relief.relieff)::Array{Float64,1}
+              rba::Any=relieff)::Array{Float64,1}
 
 Compute feature weights using TuRF algorithm. The rba argument specifies a (partially applied) wrapped 
 RBA algorithm that should accept just the data and target values.
@@ -14,8 +14,8 @@ Rajapakse, editors, Evolutionary Computation,Machine Learning and
 Data Mining in Bioinformatics, pages 166–175. Springer, 2007.
 """
 function turf(data::Array{<:Real,2}, target::Array{<:Integer,1}, num_it::Integer=10; 
-              rba::Any=Relief.relieff)::Array{Float64,1}
-
+              rba::Any=relieff)::Array{Float64,1}
+    
     # Indices of features weighted by the final weights in the original data matrix.
     sel_final = collect(1:size(data,2))
 
@@ -84,6 +84,6 @@ function turf(data::Array{<:Real,2}, target::Array{<:Integer,1}, num_it::Integer
     weights[sel_final] = weights_final
 
     # Return computed feature weights and rank.
-    return vec(weights) #, rank
+    return vec(weights)
 
 end

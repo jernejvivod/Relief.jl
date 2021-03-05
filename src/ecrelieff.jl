@@ -8,46 +8,60 @@ function __init__()
     copy!(model_selection, PyCall.pyimport_conda("sklearn.model_selection", "scikit-learn"))
 end
 
-"""
-    ec_ranking(data::Array{<:Real,2}, target::Array{<:Integer,1}, 
-                    weights::Array{<:AbstractFloat,1}, mu_vals::Array{<:AbstractFloat,1})::Array{Int64,1}
 
-Perform evaporative feature ranking (auxiliary function).
 """
-function ec_ranking(data::Array{<:Real,2}, target::Array{<:Integer,1}, 
-                    weights::Array{<:AbstractFloat,1}, mu_vals::Array{<:AbstractFloat,1})::Array{Int64,1}
+function ecrelieff(data::Array{<:Real,2}, target::Array{<:Integer,1}, m, k, 
+                    dist_func::Any=(e1, e2) -> sum(abs.(e1 .- e2), dims=2); 
+                    mode::String="k_nearest", sig::Real=1.0, f_type::String="continuous")::Array{Int64,1}
 
-	# Get maximal ReliefF weight and compute epsilon values.
-	max_weight = maximum(weights)
-	eps = (max_weight .- weights)./max_weight
+Compute feature rankings using Evaporative Cooling ReliefF algorithm.
+
+---
+# Reference:
+- B.A. McKinney, D.M. Reif, B.C. White, J.E. Crowe, Jr., J.H. Moore.
+Evaporative cooling feature selection for genotypic data involving interactions.
+"""
+function ecrelieff(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-1, k::Integer=10, 
+                   dist_func::Any=(e1, e2) -> sum(abs.(e1 .- e2), dims=2); 
+                   mode::String="k_nearest", sig::Real=1.0, f_type::String="continuous")::Array{Int64,1}
+    
+    # Compute mu values.
+    mu_vals = get_mu_vals(data, target)
 
 	# Set initial tinfo value.
 	tinfo = 1
 
 	# Initialize vector of feature ranks.
-	rank = Array{Int64}(undef, length(weights))
+	# rank = Array{Int64}(undef, length(weights))
+	rank = Array{Int64}(undef, size(data, 2))
 
 	# Initialize vector of indices in original weights array.
-	index_vector = collect(1:length(weights))
+	# index_vector = collect(1:length(weights))
+	index_vector = collect(1:size(data, 2))
 	
 	# Initialize initial rank value.
-	rank_value_next = length(weights)
+	# rank_value_next = length(weights)
+	rank_value_next = size(data, 2)
 	
 	# Initialize variable that holds current best tinfo value.
 	best_tinfo = tinfo
 
 	# While there are unranked features, perform evaporation.
 	@inbounds while length(index_vector) > 1
-		
+        
+        # Compute ReliefF weights.
+        weights = relieff(data, target, m, k, dist_func, mode=mode, sig=sig, f_type=f_type)
+
+        # Get maximal ReliefF weight and compute epsilon values.
+        max_weight = maximum(weights)
+        eps = (max_weight .- weights)./max_weight
 
 		### Grid search for best temperature from previous step ###
-
 
 		# Initialize variables that hold current maximal CV score 
 		# and index of removed feature.
 		max_cv_val = 0.0
 		idx_removed_feature = -1
-
 		
 		# Perform grid search for best value of tinfo.
 		@inbounds for tinfo_nxt = tinfo-0.3:0.1:tinfo+0.3
@@ -60,7 +74,6 @@ function ec_ranking(data::Array{<:Real,2}, target::Array{<:Integer,1},
 			rank_weights = zeros(Int64, length(weights_nxt))
 			s = enumerated_weights[:, sortperm(enumerated_weights[1,:], rev=false)]
 			rank_weights[convert.(Int64, s[2, :])] = 1:length(weights_nxt)
-
 
 			# Remove lowest ranked feature.
 			msk_rm = rank_weights .!= length(weights_nxt)
@@ -88,7 +101,6 @@ function ec_ranking(data::Array{<:Real,2}, target::Array{<:Integer,1},
 		eps = eps[1:end .!= idx_removed_feature]
 		mu_vals = mu_vals[1:end .!= idx_removed_feature]
 
-
 		# Get index of evaporated feature in original data matrix.
 		rank_index_next = index_vector[idx_removed_feature]
 
@@ -109,18 +121,6 @@ function ec_ranking(data::Array{<:Real,2}, target::Array{<:Integer,1},
 	# Return vector of ranks.
 	return rank
 
-end
-
-
-"""
-    function entropy(distribution::Array{<:Real,2})::Float64
-
-Compute entropy of distribution (auxiliary function).
-"""
-function entropy(distribution::Array{<:Real,1})::Float64
-    counts_classes = [sum(distribution .== el) for el in unique(distribution)]
-    p_classes = counts_classes/length(distribution)
-    return sum(p_classes.*log.(p_classes))
 end
 
 
@@ -149,7 +149,9 @@ end
 Compute scaled mutual information of two distributions (auxiliary function).
 """
 function scaled_mutual_information(distribution1::Array{<:Real,1}, distribution2::Array{<:Real,1})::Float64
-    return (entropy(distribution1) + entropy(distribution2) - joint_entropy_pair(distribution1, distribution2))/entropy(distribution1)
+    entropy_dist1 = StatsBase.entropy(distribution1)
+    entropy_dist2 = StatsBase.entropy(distribution2)
+    return (entropy_dist1 + entropy_dist2 - joint_entropy_pair(distribution1, distribution2))/entropy_dist1
 end
 
 
@@ -158,34 +160,11 @@ end
 
 Compute mu values from data and target (auxiliary function).
 """
-function mu_vals(data::Array{<:Real,2}, target::Array{<:Integer,1})
+function get_mu_vals(data::Array{<:Real,2}, target::Array{<:Integer,1})
     mu_vals = Array{Float64}(undef, size(data, 2))
     @inbounds for idx = 1:size(data, 2)
         mu_vals[idx] = scaled_mutual_information(Array{Real,1}(data[:, idx]), target)
     end
-
     return mu_vals
 end
 
-
-"""
-function ecrelieff(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-1, 
-                    k::Integer=5, dist_func::Any=(e1, e2) -> sum(abs.(e1 .- e2), dims=2))::Array{Int64,1}
-
-Compute feature rankings using Evaporative Cooling ReliefF algorithm.
-
----
-# Reference:
-- B.A. McKinney, D.M. Reif, B.C. White, J.E. Crowe, Jr., J.H. Moore.
-Evaporative cooling feature selection for genotypic data involving interactions.
-"""
-function ecrelieff(data::Array{<:Real,2}, target::Array{<:Integer,1}, m::Signed=-1, 
-                    k::Integer=5, dist_func::Any=(e1, e2) -> sum(abs.(e1 .- e2), dims=2); 
-                    mode::String="k_nearest", sig::Real=1.0, f_type::String="continuous")::Array{Int64,1}
-    
-    # Compute ReliefF weights.
-    relieff_weights = relieff(data, target, m, k, dist_func, mode=mode, sig=sig, f_type=f_type)
-
-    # Perform evaporative cooling feature selection to get feature ranks.
-    return ec_ranking(data, target, relieff_weights, mu_vals(data, target))
-end

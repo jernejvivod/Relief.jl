@@ -20,7 +20,7 @@ data. PloS ONE, 8(12):e81527–e81527, Dec 2013.
 function reliefseq(data::Array{<:Real, 2}, target::Array{<:Integer, 1}, m::Signed=-1, 
                    k_min::Integer=5, k_max::Integer=10, dist_func::Any=(e1, e2) -> sum(abs.(e1 .- e2), dims=2); 
                    mode::String="k_nearest", sig::AbstractFloat=1.0, f_type::String="continuous")::Array{Float64,1}
-
+    
     # Check if k nearest misses and hits can be found for each class.
     upper_k_lim = minimum(values(countmap(Int64.(target)))) - 1
     if k_min > upper_k_lim
@@ -38,7 +38,7 @@ function reliefseq(data::Array{<:Real, 2}, target::Array{<:Integer, 1}, m::Signe
     # Go over interval of k values and compute ReliefF feature weights.
     col_idx = 1
     @inbounds for k = k_min:k_max
-        res_mat[:, col_idx] = Relief.relieff(data, target, m, k, dist_func, mode=mode, sig=sig, f_type=f_type)
+        res_mat[:, col_idx] = relieff(data, target, m, k, dist_func, mode=mode, sig=sig, f_type=f_type)
         col_idx += 1
     end
 
