@@ -26,7 +26,7 @@ export
 
 include("./utils/square_to_vec.jl")
 
-include("relief.jl")
+include("originalrelief.jl")
 include("relieff.jl")
 include("reliefseq.jl")
 include("reliefmss.jl")
